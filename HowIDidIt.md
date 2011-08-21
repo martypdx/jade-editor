@@ -2,6 +2,7 @@
 About nine months ago I was playing with the ace editor with the goal of creating a teaching environment for TDD (a topic for another day). After playing and hacking for a bit, I instead ended up creating a live editor for jade (with css). At the time, jade was only server-side, so it also served me as an introduction to socket.io.
 
 I've gotton a lot of used out of that version, also adding json options for passing in data models and javascript for adding behavior. But the time had come for a redo for a number of reasons:
+
 * It existing in a project directory stuffed full of learning crap around the ace editor, and even the base html page was a ace editor demo I had started hacking on
 * Jade is now supported in the browser. Running every keystroke locally with node through socket.io is actually very performant (in terms of user experience), but a full browser-based solution just seems right.
 * I use the current editor to do Feature Driven Development (FDD), my current versions has some testing/pinning aspects so that you can create the visual result first, then pin it and make the jade template data driven and extract a data model. The point here being that I wanted to create the editor from scratch using FDD and work through the 'bootstrapping' issues.
