@@ -113,7 +113,8 @@ The test passes and now time to bring in the jade library and use the jade templ
 
 ```html
 <script src="js/3rdParty/jade.js"></script>
-...
+```
+```javascript
 function render() {         
     var jade_template = $('#actual>.editor>.jade').value;
     $('#actual>.editor>.html').textContent = require('jade').render(jade_template);
