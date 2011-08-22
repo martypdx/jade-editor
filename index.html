@@ -2,7 +2,7 @@
 <html>
 <head>
     <style type="text/css">
-        #editor {
+        .editor {
             position: absolute;
             width: 100%; height: 60%;
         }
@@ -22,10 +22,55 @@
             background: lightblue;
         }
     </style>
+    <script type="text/javascript">     
+        window.onload = function() {
+            var render = setupJade();
+            render();
+            test();
+        }
+    </script>
+    <script src="js/3rdParty/jade.js"></script>
+    
+    <script type="text/javascript">     
+        function test() {
+            function getHtml(id) {
+                return document.getElementById(id).innerHTML.trim();
+            }
+            var expected = getHtml('expected');
+            var actual = getHtml('actual');
+            
+            if(expected !== actual) { alert('Actual does not match expected standard') }
+        }
+    </script>
+    <script type="text/javascript">
+        function setupJade() {
+            var jade = require('jade');
+            var jade_editor = $('#actual>.editor>.jade');
+            var html_display = $('#actual>.editor>.html');
+            var render = function() {         
+                html_display.textContent = jade.render(jade_editor.value);
+            }
+            jade_editor.addEventListener('keyup', render, true);
+            function $(s) { return document.querySelector(s); }
+            
+            return render;
+        }
+    </script>
+</head>
 <body>
-    <div id="editor">
-        <textarea class="jade">p Hello World</textarea>
-        <pre class="html">&lt;p&gt;Hello World&lt;/p&gt;</pre>
+    <div id="expected" style="display: none;">
+        <div class="editor">
+            <textarea class="jade">p Hello World</textarea>
+            <pre class="html">&lt;p&gt;Hello World&lt;/p&gt;</pre>
+        </div>
     </div>
+    
+    <div id="actual">
+        <div class="editor">
+            <textarea class="jade">p Hello World</textarea>
+            <pre class="html"></pre>
+        </div>
+    </div>
+    
 </body>
 </html>
