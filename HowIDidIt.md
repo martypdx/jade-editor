@@ -76,7 +76,7 @@ The easiest way I saw was to duplicate the standard into expected and actual `di
 And write a test onload that makes sure they are the same:
 
 ```html
-<script type="text/javascript">    
+<script type="text/javascript">
     function test() {
         function getHtml(id) {
             return document.getElementById(id).innerHTML.trim();
@@ -84,12 +84,42 @@ And write a test onload that makes sure they are the same:
         var expected = getHtml('expected');
         var actual = getHtml('actual');
         
-        if(expected !== actual) { alert('Does not match standard') }
+        if(expected !== actual) { alert('Actual does not match expected standard') }
     }
 </script>
 ...
 <body onload="test()">
 ```
 
-then refactor the actual to use the `jade.render` method.
+Later on, I'll introduce some diff visualizations for comparison failures, but for now the html is short and I can just look at the (chrome for me) `Elements` viewer if I need to see what's up.
 
+## Refactor Out the Functionality
+Now I can safely make changes to bring in the functionality knowing that I'm still producing the correct output (the expected standard). First step is to pull the literal value (escaping the brackets no longer necessary) into a function called on load:
+
+```html
+function render() {
+    document.querySelector('#actual>.editor>.html').textContent = '<p>Hello World</p>';
+}
+...
+<div id="actual">
+    <div class="editor">
+        <textarea class="jade">p Hello World</textarea>
+        <pre class="html"></pre>
+    </div>
+</div>
+```
+
+The test passes and now time to bring in the jade library and use the jade template code:
+
+```html
+<script src="js/3rdParty/jade.js"></script>
+...
+function render() {         
+    var jade_template = $('#actual>.editor>.jade').value;
+    $('#actual>.editor>.html').textContent = require('jade').render(jade_template);
+    
+    function $(s) { return document.querySelector(s); }
+}
+```
+
+## Make It Real Time
