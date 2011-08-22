@@ -22,13 +22,12 @@ The first step is create the visualize of what I want to see _after_ the system 
     <style type="text/css">
         #editor {
             position: absolute;
-            width: 100%; height: 100%; 
-            background: lightblue;
+            width: 100%; height: 60%;
         }
         .jade, .html {
             position: absolute;
             resize: none;
-            top: 0%; width: 45%; height: 50%;
+            top: 0%; width: 45%; height: 100%;
             border: 1px groove lightblue;
             margin: 15px; padding: 10px;
         }
@@ -38,6 +37,7 @@ The first step is create the visualize of what I want to see _after_ the system 
         }
         body {
             margin: 0px;
+            background: lightblue;
         }
     </style>
 <body>
@@ -49,4 +49,5 @@ The first step is create the visualize of what I want to see _after_ the system 
 </html>
 ```
 
-This is very simple. Adding the styling was important in that I wanted feel good about what I was looking at. Maybe some rounded corners or drop shadows might add more appeal, but this was enough whie keeping things simple.
+This core html is very simple, with a nod to the classic `Hello World`. It may seem strange to be adding styling at this point, but it's important to feel good looking at what's onscreen. The style is decoupled into css. Maybe some rounded corners or drop shadows might add more appeal, but this was enough whie keeping things simple.
+
