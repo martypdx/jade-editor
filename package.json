@@ -1,14 +1,8 @@
 	{
 	  "name": "jade-editor",
 	  "version": "0.0.1",
-	  "repository": {},
-	  "directories": {
-		"lib": "."
-	  },
-	  "engines": {
-		"node": "*"
-	  },
 	  "dependencies": {
-		"express": "*"
+		"express": "*",
+		"jade": "*"
 	  }
     }
