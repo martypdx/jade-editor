@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <link rel="stylesheet" href="css/panes.css" type="text/css">
+    <link rel="stylesheet" href="css/editors.css" type="text/css">
+    <style type="text/css">
+        body {
+            margin: 0px;
+        }		
+    </style>
+    
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.js" type="text/javascript"></script>
+	<!--
+		<script src="jquery-1.4.4.js" type="text/javascript"></script>
+		<script type="text/javascript" src="../js/icanhaz/ICanHaz.js"></script>
+    -->
+	
+    <script type="text/javascript" src="js/3rdParty/event.drag/jquery.event.drag.js"></script>   
+    <script src="js/3rdParty/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/theme-solarized_light.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/mode-css.js" type="text/javascript" charset="utf-8"></script>
+    
+    <script src="js/3rdParty/jade.js"></script>
+    <script src="js/panes.js"></script>
+    <script src="js/editors.js"></script>
+    
+    <script type="text/javascript">     
+        window.onload = function() {
+	    var $panes = $('#master')
+	    var panes = Panes.init($panes)
+	    
+		editors.setPreview(window.frames[0].document); //find better cross-browser way for this
+	    
+	    var jade_editor = editors.createJade($panes.find('.jade')[0])
+	    var css_editor = editors.createCSS($panes.find('.css')[0])
+	    
+		editors.showPreview()
+	    	    
+	    panes.onresize(function() {
+			jade_editor.resize()
+			css_editor.resize()
+		})
+		
+        }
+    </script>
+    
+    <script type="text/javascript">     
+        function test() {
+            function getHtml(id) {
+                return document.getElementById(id).innerHTML.trim();
+            }
+            var expected = getHtml('expected');
+            var actual = getHtml('actual');
+            
+            if(expected !== actual) { alert('Actual does not match expected standard') }
+        }
+    </script>
+    <script type="text/javascript">
+        function setupJade(jade_editor, preview) {
+			var jade = jade_require('jade');
+			
+			var render = function() {
+				preview.open()
+				preview.write(jade.render(jade_editor[0].textContent))
+				preview.close()
+			}
+			
+			var spaceTabs = function(evt) {
+				var isTab = (evt.keyCode === 9);
+				if(isTab) {
+					evt.preventDefault()
+					return false;
+				}	
+			}
+			
+			render();
+				
+			jade_editor[0].addEventListener('keydown', spaceTabs, true);
+			jade_editor[0].addEventListener('keyup', render, true);
+        }
+		
+    </script>
+</head>
+<body>  
+    <div id="master" class="panes">
+		<div class="pane upper lower left shadow">
+			<div class="panes">
+				<div class="pane upper left shadow">
+					<div class="jade">p Hello World</div>
+				</div>
+				<div class="pane upper right shadow">
+					<div class="css">p { color: forestgreen }</div>
+				</div>
+				<div class="pane lower left shadow"></div>
+				<div class="pane lower right shadow"></div>
+				<div class="sizer quad-sizer"></div>
+			</div>
+		</div>
+		<div class="pane upper lower right shadow">
+			<iframe class="preview"></iframe>
+		</div>
+		<div class="sizer horizontal-sizer"></div>
+    </div>
+
+    
+</body>
+</html>

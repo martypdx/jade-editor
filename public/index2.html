@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <style>
+        body {
+            margin: 0px;
+        }
+	.code-wrap {
+	}
+        .jade {
+            resize: none;
+	    
+	    background: ivory;
+	    
+	    
+	    position: absolute;
+            top:0px; bottom:0px; left:0px; right: 0px;
+	    
+            padding: 10px;
+            border-color: ivory;
+	    margin: 0px;
+	    white-space: nowrap; overflow: auto
+        }
+	#preview-frame {
+	    width: 99.5%; height: 99.5%;
+	}
+	table {
+	    position: absolute;
+	    height: 100%; width: 100%;
+	    background: lightblue ;
+	    border: 1px solid steelblue;
+	    table-layout: fixed;
+	}
+	.upper { height: 50%;}
+	
+	.left { width: 50%; }
+	
+	td {
+		background: lightcyan;
+		border: 1px solid steelblue;
+	}
+    </style>
+    
+    
+</head>
+<body>
+
+            
+            <table>
+                <tr class="upper">
+		<td class="left">
+		    <div class="jade">p Hello World, what a fine day it is today of all days</div>
+		    <!--
+		    <div class="code-wrap">
+			<div class="code-test jade">p Hello World, what a fine day it is today of all days</div>
+		    </div>
+		    -->
+		</td>
+		<td class="right"></td></tr><tr class="lower"><td class="left"></td><td class="right"></td></tr><div class="sizer"></div>
+            </table>
+            
+    
+</body>
+</html>
