@@ -1,5 +1,6 @@
 
 var editors = {}
+var theme = 'dawn'
 editors.createSession = function(id) {
   var editor = ace.edit(id);
   var session = editor.getSession();
@@ -64,7 +65,7 @@ editors.updateCSS = function() {
 
 editors.createCSS = function(element) {
 	var editor = ace.edit(element);
-	//editor.setTheme("ace/theme/solarized_light")
+	editor.setTheme('ace/theme/' + theme)
 	
 	editor.renderer.setShowGutter(false)
 	
@@ -84,7 +85,7 @@ editors.createCSS = function(element) {
 
 editors.createJSON = function(element) {
 	var editor = ace.edit(element);
-	//editor.setTheme("ace/theme/solarized_light")
+	editor.setTheme('ace/theme/' + theme)
 	
 	//editor.renderer.setShowGutter(false)
 	
@@ -105,7 +106,7 @@ editors.createJSON = function(element) {
 
 editors.createJade = function(element) {
 	var editor = ace.edit(element);
-	//editor.setTheme("ace/theme/solarized_light")
+	editor.setTheme('ace/theme/' + theme)
 	
 	session = editor.getSession();
 	session.setTabSize(2);
