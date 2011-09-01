@@ -1,18 +1,19 @@
+
 .ace_gutter {
 	width: 30px !important;
 	background: rgba(222,184,135,0.6) !important;
 }
 .ace_editor .ace_sb {
-	overflow-y: auto !important;
-	/*background-color: #FDF6E3 !important;
-	border: 1px solid #FDF6E3 !important;*/
+	overflow-y: auto !important; 
 }
 .ace_scroller {
 	overflow-x: auto !important;
 }
-iframe.preview {
-	width: 99.5%; height: 99.5%;
-}
 .ace_editor {
 	background-color: #FDF6E3 !important;
+}
+
+
+iframe.preview {
+	width: 99.5%; height: 99.5%;
 }
