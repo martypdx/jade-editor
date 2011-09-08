@@ -1,7 +1,7 @@
 
 .ace_gutter {
 	width: 30px !important;
-	/*background: rgba(222,184,135,0.6) !important;*/
+	background: rgba(222,184,135,0.6) !important;
 }
 .ace_editor .ace_sb {
 	overflow-y: auto !important;
@@ -10,9 +10,8 @@
 	overflow-x: auto !important;
 }
 .ace_editor {
-	background-color: #F9F9F9 !important;
+	background-color: #FDF6E3 !important;
 }
-
 
 iframe.preview {
 	width: 99.5%; height: 99.5%;

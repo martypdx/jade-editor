@@ -1,6 +1,6 @@
 
 var editors = {}
-var theme = 'dawn'
+var theme = 'solarized_light' //'dawn'
 editors.createSession = function(id) {
   var editor = ace.edit(id);
   var session = editor.getSession();
@@ -32,7 +32,8 @@ editors.showPreview = function() {
 	var html = 'No jade editor defined'
 	if(!err && editors.jade) {
 		try {
-			html = editors.jadeEngine.render(editors.jade.getValue(), {locals: json} )
+			var fn = editors.jadeEngine.compile(editors.jade.getValue() /*, options*/);
+			html = fn(json);
 		}
 		catch (er) {
 			err = er.toString()
@@ -40,26 +41,36 @@ editors.showPreview = function() {
 	}
 	
 	if(err) { html = '<pre style="color: red;">' + err + '</pre>' }
-	editors.preview.open()
-	editors.preview.write(html)
 	
-	if(editors.css) {
-		editors.head = $(editors.preview.getElementsByTagName('head'))
-		editors.style = $('<style type="text/css"></style>')
-		editors.head.append(editors.style)
-		editors.updateCSS()
+	var css = editors.css.getValue()
+	var javascript = editors.javascript.getValue() 
+	
+	var writeToPreview = function() {
+		editors.preview.open()
+		editors.preview.write(editors.layout({
+				css: css,
+				html: html,
+				javascript: javascript 
+			}))
+		editors.preview.close()		
 	}
-
-	editors.preview.close()
+	if(!templates.layout) {
+		templates.load('layout', function() {
+			editors.layout = editors.jadeEngine.compile(templates.layout /*, options*/);
+			writeToPreview()
+		})
+		templates.load('test', function() {})
+	} else {
+		writeToPreview()
+	}
 }
 
 editors.updateCSS = function() {
 	if(!editors.style) {
-		console.log('showing preview in order to have style')
 		editors.showPreview()
 	}
 	
-	editors.style.html(editors.css.getValue())
+	editors.style.text(editors.css.getValue())
 }
 
 
@@ -87,16 +98,34 @@ editors.createJSON = function(element) {
 	var editor = ace.edit(element);
 	editor.setTheme('ace/theme/' + theme)
 	
-	//editor.renderer.setShowGutter(false)
+	editor.renderer.setShowGutter(false)
 	
 	var session = editor.getSession()
 	session.setTabSize(2)
 	//session.setUseSoftTabs(true)
 	
-	var JsonScriptMode = require("ace/mode/json").Mode
-	editor.getSession().setMode(new JsonScriptMode ())
+	var JsonMode = require("ace/mode/json").Mode
+	editor.getSession().setMode(new JsonMode ())
 	
 	editors.json = session
+	
+	session.on('change', editors.showPreview)
+	
+	return editor
+}
+
+editors.createJavascript = function(element) {
+	var editor = ace.edit(element);
+	editor.setTheme('ace/theme/' + theme)
+	
+	var session = editor.getSession()
+	session.setTabSize(4)
+	//session.setUseSoftTabs(true)
+	
+	var JavascriptMode = require("ace/mode/javascript").Mode
+	session.setMode(new JavascriptMode ())
+	
+	editors.javascript = session
 	
 	session.on('change', editors.showPreview)
 	

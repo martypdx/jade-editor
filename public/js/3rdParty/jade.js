@@ -219,7 +219,7 @@ Compiler.prototype = {
    */
 
   visitBlock: function(block){
-    var len = len = block.nodes.length;
+    var len = block.nodes.length;
     for (var i = 0; i < len; ++i) {
       this.visit(block.nodes[i]);
     }
@@ -674,7 +674,7 @@ var Parser = jade_require('./parser')
  * Library version.
  */
 
-exports.version = '0.14.2';
+exports.version = '0.15.4';
 
 /**
  * Intermediate JavaScript cache.
@@ -740,21 +740,11 @@ exports.runtime = runtime;
  */
 
 function parse(str, options){
-  var filename = options.filename
-    , inline = false !== options.inline
-    , inlined = '';
-  
-  if (inline) {
-    inlined += runtime.attrs.toString() + '\n';
-    inlined += runtime.escape.toString() + '\n';
-  } else {
-    inlined = 'var attrs = jade.attrs, escape = jade.escape;\n';
-  }
+  var filename = options.filename;
   
   try {
     // Parse
     var parser = new Parser(str, filename, options);
-    if (options.debug) parser.debug();
 
     // Compile
     var compiler = new (options.compiler || Compiler)(parser.parse(), options)
@@ -767,10 +757,9 @@ function parse(str, options){
 
     try {
       return ''
-        + inlined
         + 'var buf = [];\n'
         + (options.self
-          ? 'var self = locals || {}, __ = __ || locals.__;\n' + js
+          ? 'var self = locals || {};\n' + js
           : 'with (locals || {}) {\n' + js + '\n}\n')
         + 'return buf.join("");';
       
@@ -789,7 +778,8 @@ function parse(str, options){
  * Options:
  * 
  *   - `compileDebug` when `false` debugging code is stripped from the compiled template
- *   - `inline` when `false` helpers are not inlined, and `jade.<helper>` is used
+ *   - `client` when `true` the helper functions `escape()` etc will reference `jade.escape()`
+ *      for use with the Jade client-side runtime.js
  *
  * @param {String} str
  * @param {Options} options
@@ -800,24 +790,15 @@ function parse(str, options){
 exports.compile = function(str, options){
   var options = options || {}
     , input = JSON.stringify(str)
-    , inline = false !== options.inline
+    , client = options.client
     , filename = options.filename
       ? JSON.stringify(options.filename)
       : 'undefined'
-    , inlined = ''
     , fn;
-  
-  if (inline) {
-    inlined = runtime.rethrow.toString();
-  } else {
-    inlined = 'var rethrow = jade.rethrow;';
-  }
 
   if (options.compileDebug !== false) {
-    // Reduce closure madness by injecting some locals
     fn = [
         'var __ = { lineno: 1, input: ' + input + ', filename: ' + filename + ' };'
-      , inlined
       , 'try {'
       , parse(String(str), options || {})
       , '} catch (err) {'
@@ -827,100 +808,20 @@ exports.compile = function(str, options){
   } else {
     fn = parse(String(str), options || {});
   }
-  
-  return new Function('locals', fn);
+
+  if (client) {
+    fn = 'var attrs = jade.attrs, escape = jade.escape, rethrow = jade.rethrow;\n' + fn;
+  }
+
+  fn = new Function('locals, attrs, escape, rethrow', fn);
+
+  if (client) return fn;
+
+  return function(locals){
+    return fn(locals, runtime.attrs, runtime.escape, runtime.rethrow);
+  };
 };
 
-/**
- * Render the given `str` of jade.
- *
- * Options:
- *
- *   - `scope`     Evaluation scope (`this`)
- *   - `locals`    Local variable object
- *   - `filename`  Used in exceptions, and required by `cache`
- *   - `cache`     Cache intermediate JavaScript in memory keyed by `filename`
- *   - `compiler`  Compiler to replade jade's default
- *   - `doctype`   Specify the default doctype
- *
- * @param {String|Buffer} str
- * @param {Object} options
- * @return {String}
- * @api public
- */
-
-exports.render = function(str, options){
-  var fn
-    , options = options || {}
-    , filename = options.filename;
-
-  // Accept Buffers
-  str = String(str);
-
-  // Cache support
-  if (options.cache) {
-    if (filename) {
-      if (cache[filename]) {
-        fn = cache[filename];
-      } else {
-        fn = cache[filename] = new Function('locals', parse(str, options));
-      }
-    } else {
-      throw new Error('filename is required when using the cache option');
-    }
-  } else {
-    fn = new Function('locals', parse(str, options));
-  }
-  
-  // Render the template
-  try {
-    var locals = options.locals || {}
-      , meta = { lineno: 1 };
-    locals.__ = meta;
-    return fn.call(options.scope, locals); 
-  } catch (err) {
-    runtime.rethrow(err, str, filename, meta.lineno);
-  }
-};
-
-/**
- * Render jade template at the given `path`.
- *
- * @param {String} path
- * @param {Object} options
- * @param {Function} fn
- * @api public
- */
-
-exports.renderFile = function(path, options, fn){
-  var ret;
-
-  if (typeof options === 'function') {
-    fn = options;
-    options = {};
-  }
-  options.filename = path;
-
-  // Primed cache
-  if (options.cache && cache[path]) {
-    try {
-      ret = exports.render('', options);
-    } catch (err) {
-      return fn(err);
-    }
-    fn(null, ret);
-  } else {
-    fs.readFile(path, 'utf8', function(err, str){
-      if (err) return fn(err);
-      try {
-        ret = exports.render(str, options);
-      } catch (err) {
-        return fn(err);
-      }
-      fn(null, ret);
-    });
-  }
-};
 }); // module: jade.js
 
 jade_require.register("lexer.js", function(module, exports, jade_require){
@@ -1189,12 +1090,34 @@ Lexer.prototype = {
   },
 
   /**
+   * Conditional.
+   */
+  
+  conditional: function() {
+    var captures;
+    if (captures = /^(if|unless|else if|else)\b([^\n]*)/.exec(this.input)) {
+      this.consume(captures[0].length);
+      var type = captures[1]
+        , js = captures[2];
+
+      switch (type) {
+        case 'if': js = 'if (' + js + ')'; break;
+        case 'unless': js = 'if (!(' + js + '))'; break;
+        case 'else if': js = 'else if (' + js + ')'; break;
+        case 'else': js = 'else'; break;
+      }
+
+      return this.tok('code', js);
+    }
+  },
+
+  /**
    * Each.
    */
   
   each: function() {
     var captures;
-    if (captures = /^- *each *(\w+)(?: *, *(\w+))? * in *([^\n]+)/.exec(this.input)) {
+    if (captures = /^(?:- *)?(?:each|for) +(\w+)(?: *, *(\w+))? * in *([^\n]+)/.exec(this.input)) {
       this.consume(captures[0].length);
       var tok = this.tok('each', captures[1]);
       tok.key = captures[2] || 'index';
@@ -1469,9 +1392,10 @@ Lexer.prototype = {
       || this.doctype()
       || this.include()
       || this.mixin()
+      || this.conditional()
+      || this.each()
       || this.tag()
       || this.filter()
-      || this.each()
       || this.code()
       || this.id()
       || this.className()
@@ -2066,20 +1990,6 @@ var textOnly = exports.textOnly = ['code', 'script', 'textarea', 'style', 'title
 Parser.prototype = {
   
   /**
-   * Output parse tree to stdout. 
-   *
-   * @api public
-   */
-  
-  debug: function(){
-    var lexer = new Lexer(this.input)
-      , tree = jade_require('sys').inspect(this.parse(), false, 12, true);
-    console.log('\n\x1b[1mParse Tree\x1b[0m:\n');
-    console.log(tree);
-    this.lexer = lexer;
-  },
-  
-  /**
    * Return the next token object.
    *
    * @return {Object}
@@ -2338,6 +2248,7 @@ Parser.prototype = {
    */
 
   parseInclude: function(){
+    /*
     var path = jade_require('path')
       , fs = jade_require('fs')
       , dirname = path.dirname
@@ -2346,20 +2257,28 @@ Parser.prototype = {
 
     if (!this.filename)
       throw new Error('the "filename" option is required to use includes');
+    */
+    
+    var name = this.expect('include').val.trim()
+    //  , dir = dirname(this.filename);
 
-    var path = name = this.expect('include').val.trim()
-      , dir = dirname(this.filename);
-
+    /*
     // non-jade
     if (~basename(path).indexOf('.')) {
       var path = join(dir, path)
         , str = fs.readFileSync(path, 'utf8');
       return new nodes.Literal(str);
     }
-
+    
+    
     var path = join(dir, path + '.jade')
       , str = fs.readFileSync(path, 'utf8')
-      , parser = new Parser(str, path)
+    */
+    if(!templates[name]) {
+        throw new Error('the include "' + name + '"does not exist');
+    }
+    var str = templates[name]
+    var parser = new Parser(str /*, path*/ )
       , ast = parser.parse();
 
     return ast;
@@ -2446,7 +2365,8 @@ Parser.prototype = {
     }
 
     var name = this.advance().val
-      , tag = new nodes.Tag(name);
+      , tag = new nodes.Tag(name)
+      , dot;
 
     tag.line = this.line();
 
@@ -2475,7 +2395,7 @@ Parser.prototype = {
 
     // check immediate '.'
     if ('.' == this.peek().val) {
-      tag.textOnly = true;
+      dot = tag.textOnly = true;
       this.advance();
     }
 
@@ -2502,7 +2422,7 @@ Parser.prototype = {
     // script special-case
     if ('script' == tag.name) {
       var type = tag.getAttribute('type');
-      if (type && 'text/javascript' != type.replace(/^['"]|['"]$/g, '')) {
+      if (!dot && type && 'text/javascript' != type.replace(/^['"]|['"]$/g, '')) {
         tag.textOnly = false;
       }
     }
@@ -2540,6 +2460,32 @@ jade_require.register("runtime.js", function(module, exports, jade_require){
  */
 
 /**
+ * Lame Array.isArray() polyfill for now.
+ */
+
+if (!Array.isArray) {
+  Array.isArray = function(arr){
+    return '[object Array]' == toString.call(arr);
+  };
+}
+
+/**
+ * Lame Object.keys() polyfill for now.
+ */
+
+if (!Object.keys) {
+  Object.keys = function(obj){
+    var arr = [];
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        arr.push(obj);
+      }
+    }
+    return arr;
+  } 
+}
+
+/**
  * Render the given attributes object.
  *
  * @param {Object} obj
@@ -2565,9 +2511,9 @@ exports.attrs = function attrs(obj){
             : buf.push(key + '="' + key + '"');
         }
       } else if ('class' == key && Array.isArray(val)) {
-        buf.push(key + '="' + escape(val.join(' ')) + '"');
+        buf.push(key + '="' + exports.escape(val.join(' ')) + '"');
       } else {
-        buf.push(key + '="' + escape(val) + '"');
+        buf.push(key + '="' + exports.escape(val) + '"');
       }
     }
   }

@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>Cloud 9¾</title>
     
     <link rel="stylesheet" href="css/panes.css" type="text/css">
     <link rel="stylesheet" href="css/editors.css" type="text/css">
     <style type="text/css">
         body {
             margin: 0px;
-        }		
+        }
+		
     </style>
     
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.js" type="text/javascript"></script>
@@ -18,39 +21,67 @@
 	
     <script type="text/javascript" src="js/3rdParty/event.drag/jquery.event.drag.js"></script>   
     <script src="js/3rdParty/ace/ace.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/3rdParty/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/3rdParty/ace/theme-solarized_light.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/3rdParty/ace/theme-dawn.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/3rdParty/ace/theme-clouds.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/3rdParty/ace/theme-textmate.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/3rdParty/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/3rdParty/ace/mode-css.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/3rdParty/ace/mode-json.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/theme-solarized_light.js" type="text/javascript" charset="utf-8"></script>
+	
+	<!--
+    <script src="js/3rdParty/ace/theme-twilight.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/theme-dawn.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/theme-clouds.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/theme-textmate.js" type="text/javascript" charset="utf-8"></script>
+	-->
     
+	
+    <script src="js/templates.js"></script>
     <script src="js/3rdParty/jade.js"></script>
     <script src="js/panes.js"></script>
     <script src="js/editors.js"></script>
     
-    <script type="text/javascript">     
-        window.onload = function() {
-	    var $panes = $('#master')
-	    var panes = Panes.init($panes)
-	    
-		editors.setPreview(window.frames[0].document); //find better cross-browser way for this
-	    
-	    var jade_editor = editors.createJade($panes.find('.jade')[0])
-	    var css_editor = editors.createCSS($panes.find('.css')[0])
-	    var json_editor = editors.createJSON($panes.find('.json')[0])
-	    
-		editors.showPreview()
-	    	    
-	    panes.onresize(function() {
-			jade_editor.resize()
-			css_editor.resize()
-			json_editor.resize()
-		})
+    <script type="text/javascript">
+		//var suspendResize = false
 		
+        window.onload = function() {
+			var $panes = $('#master')
+			var panes = Panes.init($panes, { widthRatio: .6})
+			
+			
+			editors.setPreview(window.frames[0].document); //find better cross-browser way for this
+			
+			var jade_editor = editors.createJade($panes.find('.jade')[0])
+			var css_editor = editors.createCSS($panes.find('.css')[0])
+			var json_editor = editors.createJSON($panes.find('.json')[0])
+			var javascript_editor = editors.createJavascript($panes.find('.javascript')[0])
+			
+			editors.showPreview()
+					
+			panes.onresize(function() {
+				jade_editor.resize()
+				css_editor.resize()
+				json_editor.resize()
+				javascript_editor.resize()
+			})
+			
+			window.onresize = function() {
+				//if(suspendResize) { return }
+				
+				//console.log('resize')
+				panes.resize()
+			}
         }
+		
+		/*
+		window.onblur = function() {
+			console.log('blur')
+			suspendResize = true
+		}
+		
+		window.onfocus = function() {
+			console.log('focus')
+			suspendResize = false
+		}
+		*/
     </script>
     
     <script type="text/javascript">     
@@ -90,34 +121,40 @@
 		
     </script>
 </head>
-<body>  
+<body>
+	
+	
+	
     <div id="master" class="panes">
-		<div class="pane upper lower left shadow">
+		<div class="pane top bottom left shadow">
+			
 			<div class="panes">
-				<div class="pane upper left shadow">
+				<div class="pane top left shadow">
 					<div class="jade">p Hello #{place}</div>
 				</div>
-				<div class="pane upper right shadow">
+				<div class="pane top right shadow">
 					<div class="css">p {
 	color: forestgreen;
 	font-family: arial
 }</div>
 				</div>
-				<div class="pane lower left shadow">
+				<div class="pane bottom left shadow">
 					<div class="json">{
 	place: "World"
 }</div>
 				</div>
-				<div class="pane lower right shadow"></div>
+				<div class="pane bottom right shadow">
+					<div class="javascript">$('p').hide(1000).show(2000)</div>
+				</div>
 				<div class="sizer quad-sizer"></div>
 			</div>
+			
 		</div>
-		<div class="pane upper lower right shadow">
+		<div class="pane top bottom right shadow">
 			<iframe class="preview"></iframe>
 		</div>
 		<div class="sizer horizontal-sizer"></div>
     </div>
-
-    
+	
 </body>
 </html>

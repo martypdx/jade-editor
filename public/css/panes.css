@@ -1,8 +1,11 @@
 .panes { 
-	background: rgba(143, 188, 143,0.5);
 	position: absolute;
 	width: 100%; height: 100%;
-	min-width: 100px; min-height: 100px;
+	
+	/* keep this???
+	min-width: 100px; min-height: 100px; */
+	
+	background: rgba(143, 188, 143,0.5);
 	visibility: hidden;
 }
 .panes.loaded {
@@ -11,62 +14,80 @@
 .panes.nested {
 	background: none;
 }
+
 .pane {
 	position: absolute;
 	background: white;
-	/*border: 1px solid steelblue;*/
-}
-.pane > div:not(.nested) {
-	position:absolute;
-	top:0px; bottom:0px; left:0px; right: 0px;   
+	/*border: 1px solid steelblue;
+	overflow: hidden;*/
 }
 .shadow {
 	-moz-box-shadow: 2px 2px 5px grey;
 	-webkit-box-shadow: 2px 2px 5px grey;
 	box-shadow: 2px 2px 5px grey;
 }
+
+.pane > div:not(.nested) {
+	position:absolute;
+	top:0px; bottom:0px; left:0px; right: 0px;   
+}
+
 .pane.fill {
 	background: none !important;
 	border: none !important;
+	
 	-moz-box-shadow: none !important;
 	-webkit-box-shadow: none !important;
 	box-shadow: non !important;
+	
 }
 .pane.no-pointer-events {
 	pointer-events: none;
 }
 
-.upper { top: 6px; }
-.lower { bottom: 6px;}
-.left { left: 6px; }
-.right { right: 6px; }
+.top { top: 7px; }
+.bottom { bottom: 7px;}
+.left { left: 7px; }
+.right { right: 7px; }
 
-.nested>.upper { top: 0px; }
-.nested>.lower { bottom: 0px;}
+.nested>.top { top: 0px; }
+.nested>.bottom { bottom: 0px;}
 .nested>.left { left: 0px; }
 .nested>.right { right: 0px; }
 
 .sizer {
 	position: absolute;
-	width: 22px; height: 22px;
-	top: 39px; left: 39px;
+	width: 23px; height: 23px;
+	margin: -8px;
+	
+	z-index: 100;
+	
+}
+.sizer:after {
+	content: '';
 	border-radius: 100%;
 	background: rgba(176, 224,230, 0.8);
 	background-position: center center;
 	background-repeat: no-repeat;
 	border: 1px solid steelblue;
 	box-shadow: 2px 2px 5px 2px rgba(192, 192, 192, 0.6);
-	opacity: 0.8
-	
+	position: absolute;
+	top: 0px; left: 0px; bottom: 0px; right: 0px;
+	-webkit-transform: scale(.9);
+	-moz-transform: scale(.9);
+	transform: scale(.9);
+	opacity: 0.8;
 }
-.sizer:hover {
+.sizer:hover:after, .sizer.dragging:after {
+	-webkit-transform: scale(1.1);
+	-moz-transform: scale(1.1);
+	transform: scale(1.1);
 	opacity: 1.0
 }
-.quad-sizer {
-	background-image: url(../images/quad_resize.png);
-	
+.sizer.quad-sizer:after {
+	background-image: url(../images/quad_resize_new.png);
 }
-.horizontal-sizer {
+.sizer.horizontal-sizer:after {
 	background-image: url(../images/horizontal_resize.png);
 	
 }

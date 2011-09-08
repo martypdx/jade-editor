@@ -75,20 +75,17 @@ The easiest way I saw was to duplicate the standard into expected and actual `di
 
 And write a test onload that makes sure they are the same:
 
-```html
-<script type="text/javascript">
-    function test() {
-        function getHtml(id) {
-            return document.getElementById(id).innerHTML.trim();
-        }
-        var expected = getHtml('expected');
-        var actual = getHtml('actual');
-        
-        if(expected !== actual) { alert('Actual does not match expected standard') }
+```javascript
+window.onload = function test() {
+    var expected = getHtml('expected');
+    var actual = getHtml('actual');
+    
+    if(expected !== actual) { alert('Actual does not match expected standard') }
+    
+    function getHtml(id) {
+        return document.getElementById(id).innerHTML.trim();
     }
-</script>
-...
-<body onload="test()">
+}
 ```
 
 Later on, I'll introduce some diff visualizations for comparison failures, but for now the html is short and I can just look at the (chrome for me) `Elements` viewer if I need to see what's up.
