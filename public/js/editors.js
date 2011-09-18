@@ -65,14 +65,14 @@ editors.showPreview = function() {
 	}
 }
 
+/*
 editors.updateCSS = function() {
 	if(!editors.style) {
 		editors.showPreview()
 	}
-	
 	editors.style.text(editors.css.getValue())
 }
-
+*/
 
 editors.createCSS = function(element) {
 	var editor = ace.edit(element);
@@ -89,7 +89,7 @@ editors.createCSS = function(element) {
 	
 	editors.css = session
 	
-	session.on('change', editors.updateCSS)
+	session.on('change', editors.showPreview)
 	
 	return editor
 }

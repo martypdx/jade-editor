@@ -12,15 +12,16 @@
         }
 		
     </style>
-    
+	
+    <!--
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.5.2/jquery.js" type="text/javascript"></script>
-	<!--
-		<script src="jquery-1.4.4.js" type="text/javascript"></script>
-		<script type="text/javascript" src="../js/icanhaz/ICanHaz.js"></script>
-    -->
+	-->
+	
+	<script src="js/3rdParty/jquery/jquery.js" type="text/javascript"></script>
+	
 	
     <script type="text/javascript" src="js/3rdParty/event.drag/jquery.event.drag.js"></script>   
-    <script src="js/3rdParty/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="js/3rdParty/ace/ace-uncompressed.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/3rdParty/ace/mode-javascript.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/3rdParty/ace/mode-css.js" type="text/javascript" charset="utf-8"></script>
     <script src="js/3rdParty/ace/mode-json.js" type="text/javascript" charset="utf-8"></script>
@@ -35,16 +36,18 @@
     
 	
     <script src="js/templates.js"></script>
-    <script src="js/3rdParty/jade.js"></script>
+    <script src="js/3rdParty/jade/jade.js"></script>
+	<script src="js/3rdParty/microevent/microevent.js"></script>
+	<script src="js/sizer.js"></script>
     <script src="js/panes.js"></script>
     <script src="js/editors.js"></script>
     
     <script type="text/javascript">
 		//var suspendResize = false
 		
-        window.onload = function() {
+        var init = function() {
 			var $panes = $('#master')
-			var panes = Panes.init($panes, { widthRatio: .6})
+			var panes = Panes.init($panes, { widthRatio: .61})
 			
 			
 			editors.setPreview(window.frames[0].document); //find better cross-browser way for this
@@ -63,14 +66,9 @@
 				javascript_editor.resize()
 			})
 			
-			window.onresize = function() {
-				//if(suspendResize) { return }
-				
-				//console.log('resize')
-				panes.resize()
-			}
+			
         }
-		
+		$(init)
 		/*
 		window.onblur = function() {
 			console.log('blur')

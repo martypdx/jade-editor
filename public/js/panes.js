@@ -1,3 +1,9 @@
+if(!Number.prototype.half) {
+    Number.prototype.half = function () {
+        return this/2
+    }
+}
+
 function Panes(panes, options) {
 	
 	options = options || {}
@@ -7,130 +13,100 @@ function Panes(panes, options) {
 	panes.bottom = panes.children('.bottom')
 	panes.left = panes.children('.left')
 	panes.right = panes.children('.right')
-	panes.hasLeftRight = panes.left.length > 1 || panes.right.length > 1
-	panes.hasTopBottom = panes.top.length > 1 || panes.bottom.length > 1
-	panes.sizer = panes.children('.sizer')
+	panes.hasLeftRight = panes.top.length > 1 || panes.bottom.length > 1 
+	panes.hasTopBottom = panes.left.length > 1 || panes.right.length > 1
 	
-	//var sizer = panes.children('.sizer')
-	
-	var heightManager = new HeightManager()
-	var widthManager = new WidthManager()
-	
-	function NoopManager() {
-		this.size = function() {}
-		this.updateTotalSize = function() { return false }	
-	}
-	
-	function HeightManager() {
-		return panes.hasLeftRight
-			? new SizingManager('Height', 'top', 'bottom')
-			: new NoopManager()
-	}
-	
-	function WidthManager() {
-		return panes.hasTopBottom
-			? new SizingManager('Width', 'left', 'right')
-			: new NoopManager() 
-	}
-	
-	function SizingManager(dimension, lesser, greater) {
-		var mgr = this
-		mgr.total = null
+	function Sizer() {
 		
-		var upper = panes[lesser]
-		 , 	lower = panes[greater]
-		 ,	sizerDimension = panes.sizer['outer' + dimension](true)
-		 ,	minMax = sizerDimension * 2.5
-		 
-		mgr.total = panes[dimension.toLowerCase()]()
+		var element = panes.children('.sizer')
+		var totalWidth = element.outerWidth()
+		var functionalWidth = element.outerWidth(true)
+		var totalHeight = element.outerHeight()
+		var functionalHeight = element.outerHeight(true)
+		var containerWidth = panes.width()
+		var containerHeight = panes.height()
 		
-		mgr.updateTotalSize = function() {
-			var newTotal = panes[dimension.toLowerCase()]()
-			if(newTotal === mgr.total) { return false }
-			
-			var sizerRatio = panes.sizer.position()[lesser] / mgr.total
-			mgr.total = newTotal
-			mgr.size(sizerRatio * newTotal)
+		this.byRatio = function(xRatio, yRatio) {
+			var x = (containerWidth * xRatio) - functionalWidth.half()
+			var y = (panes.height() * yRatio) - functionalHeight.half()
+            selfSize(x, y)
+		}
 		
-			return true;
+		this.resize = function() {
+			var oldWidth = containerWidth
+			containerWidth = panes.width()
+			var oldHeight = containerHeight
+			containerHeight = panes.height()
+			if(containerWidth !== oldWidth || containerHeight !== oldHeight) {
+				var current = element.position()
+				this.byRatio(
+					(current.left + functionalWidth.half())/oldWidth
+				 ,	(current.top + functionalHeight.half())/oldHeight)
+			}
 		}
-
-		mgr.size = function(value) {
-			if(!hasValue(value)) { return }
-			value = enforceMinMax(value)
-			positionSizer(value)
-			sizePanels(value)
+		var selfSize = this.size = function(x, y) {
+			if(x === 0 || x) {
+				x = Math.max(x,  (totalWidth - functionalWidth) )
+				x = Math.min (x, containerWidth - totalWidth)
+				element.css('left', x)
+				x_ = x
+				if(panes.hasLeftRight) {
+					panes.left.css('right',  containerWidth - x + 1)
+					panes.right.css('left',  x + functionalWidth + 1)
+				}
+			}
+			if(y === 0 || y) { 
+				y = Math.max(y,  (totalHeight - functionalHeight) )
+				y = Math.min (y, panes.height() - totalHeight)
+				element.css('top', y) 
+				if(panes.hasTopBottom) {
+					panes.top.css('bottom', panes.height() - y + 1)  
+					panes.bottom.css('top', y + functionalHeight + 1)
+				}
+			}
+			if(self.nested) { self.nested.resize()}
+			fire_onresize()
 		}
-		function hasValue(value) {
-			return value === 0 || value
-		}
-		function enforceMinMax(value) { 
-			value = Math.max(value, minMax)
-			return Math.min (value, mgr.total - minMax)
-		}
-		function positionSizer(value) { 
-			panes.sizer.css(lesser, value)
-		}
-		function sizePanels(value) { 
-			upper.css(greater, mgr.total - value)
-			lower.css(lesser, value + sizerDimension )
-		}		
+		
+		element
+			.drag('init', function(ev, dd) {
+				element.addClass('dragging')
+				self.dragStart(dd)
+			})
+			.drag(function( ev, dd ){
+				selfSize(
+					panes.hasLeftRight ? dd.offsetX : undefined
+				 ,	panes.hasTopBottom ? dd.offsetY : undefined)
+				
+			}, { relative: true })
+			.drag('end', function(ev, dd) {
+				element.removeClass('dragging')
+				self.dragEnd(dd)
+			})
 	}
 	
-	function setTotalSize() {
-		return widthManager.updateTotalSize() && heightManager.updateTotalSize()
-	}
+	var sizer = new Sizer()
 	
-	panes.sizer
-		.drag('init', function(ev, dd) {
-			panes.sizer.addClass('dragging')
-			self.dragInit(ev, dd)
-		})
-		.drag(function( ev, dd ){
-			self.size(dd.offsetX, dd.offsetY)
-			
-		}, { relative: true })
-		.drag('end', function(ev, dd) {
-			panes.sizer.removeClass('dragging')
-			self.dragEnd(ev, dd)
-		})
-		
-
-	
-	this.size = function(x, y) {
-		widthManager.size(x)
-		heightManager.size(y)
-		if(self.nested) { self.nested.resize()}
-		fire_onresize()
-	}
-	
-	this.dragInit = function(ev, dd) {
+	this.dragStart = function(drag) {
 		if(self.parent) {
-			self.parent.dragInit(ev, dd)
+			self.parent.dragStart(drag)
 		} else {
-			dd.panes = panes.find('.pane')
-			dd.panes.removeClass('shadow')
+			drag.panes = panes.find('.pane')
+			drag.panes.removeClass('shadow')
 			
-			dd.panes.addClass('no-pointer-events')
-			dd.iframes = dd.panes.find('iframe')
-			dd.iframes.addClass('no-pointer-events')			
+			drag.panes.addClass('no-pointer-events')
+			drag.iframes = drag.panes.find('iframe')
+			drag.iframes.addClass('no-pointer-events')			
 		}	
 	}
-	this.dragEnd = function(ev, dd) {
-		dd.panes.addClass('shadow')
-		dd.panes.removeClass('no-pointer-events')
-		dd.iframes.removeClass('no-pointer-events')
+	this.dragEnd = function(drag) {
+		drag.panes.addClass('shadow')
+		drag.panes.removeClass('no-pointer-events')
+		drag.iframes.removeClass('no-pointer-events')
 	}
 	
 	this.resize = function() {
-		var currentPos = panes.sizer.position()
-		 ,	xRatio = currentPos.left / widthManager.total
-		 ,	yRatio = currentPos.top / heightManager.total
-		
-		if(setTotalSize()) {
-			//uses 'new' self .width & .height
-			self.size(xRatio * widthManager.total, yRatio * heightManager.total)			
-		}
+		sizer.resize()
 	}
 	
 	var resizeFn
@@ -141,15 +117,9 @@ function Panes(panes, options) {
 		if(resizeFn) { resizeFn() }
 	}
 	
-	setTotalSize()
 	var widthRatio = options.widthRatio || .5
 	var heightRatio = options.heightRatio || .5
-	var x = (panes.width() * widthRatio) - (panes.sizer.width()/2)
-	 ,	y = (panes.height() * heightRatio) - (panes.sizer.height()/2)
-	panes.sizer.css('top', y)
-	panes.sizer.css('left', x)
-	this.size(x, y)
-	
+    sizer.byRatio(widthRatio, heightRatio)
 	
 	panes.children('.pane').each(function(index, childPane){
 		var $childPane = $(childPane)
@@ -166,13 +136,12 @@ function Panes(panes, options) {
 	})
 	
 	
-	this.resize()
-	
 	panes.addClass('loaded')
 }
+eventer.mixin(Panes)
 
 Panes.init = function(panes, options){
 	var panes =  new Panes(panes, options)
-	
+	window.onresize = panes.resize
 	return panes
 }
