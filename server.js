@@ -7,11 +7,11 @@ var app = express.createServer(
 );
 app.set('view engine', 'jade');
 
-/*
+
 app.get('/', function (request, response) {
     //response.render('meepbop', { layout: false });
 });
-*/
+
 
 
 app.get('/templates/:name', function (request, response) {
