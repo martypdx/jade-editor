@@ -1,10 +1,11 @@
 var express = require('express')
- //,  jade = require('jade')
  ,  fs = require('fs')
-
+ ,  path = require('path')
+ 
 var app = express.createServer(
-    express.static('public')
+    express.static(path.join(__dirname, 'public'))
 );
+
 app.set('view engine', 'jade');
 
 
