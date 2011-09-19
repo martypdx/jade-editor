@@ -67,8 +67,11 @@
 }
 .sizer:after {
 	content: '';
-	-webkit-border-radius: 100%;
 	-moz-border-radius: 100%;
+	-webkit-border-top-left-radius: 100%;
+	-webkit-border-top-right-radius: 100%;
+	-webkit-border-bottom-right-radius: 100%;
+	-webkit-border-bottom-left-radius: 100%;
 	border-radius: 100%;
 	background: rgba(176, 224,230, 0.8);
 	background-position: center center;
