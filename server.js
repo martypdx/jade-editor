@@ -25,3 +25,4 @@ app.get('/templates/:name', function (request, response) {
 var port = 11848 // 80;
 app.listen(port)
 console.log('Jade-editor started on port ' + port)
+console.log('dir is', __dirname)
