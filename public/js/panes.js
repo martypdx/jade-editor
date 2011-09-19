@@ -138,7 +138,6 @@ function Panes(panes, options) {
 	
 	panes.addClass('loaded')
 }
-eventer.mixin(Panes)
 
 Panes.init = function(panes, options){
 	var panes =  new Panes(panes, options)

@@ -90,7 +90,7 @@
 	opacity: 1.0
 }
 .sizer.quad-sizer:after {
-	background-image: url(../images/quad_resize_new.png);
+	background-image: url(../images/quad_resize.png);
 }
 .sizer.horizontal-sizer:after {
 	background-image: url(../images/horizontal_resize.png);
