@@ -9,60 +9,113 @@ editors.createSession = function(id) {
   return session;
 }
 
-editors.setPreview = function(preview) {
-	editors.preview = preview;
+editors.load = function(template) {
+	editors.template = template
+	
+	editors.loading = true
+	editors.jade.setValue(template.jade || '')
+	editors.css.setValue(template.css || '')
+	editors.json.setValue(template.json || '')
+	editors.js.setValue(template.js || '')
+	editors.loading = false
+	
+	editors.showPreview()
 }
 
-editors.jadeEngine = jade_require('jade')	
+editors.setPreviewContainer = function(container) {
+	editors.previewContainer = $(container);
+}
+
+var accessCount = 0
+editors.createPreviewDocument = function() {
+	if(accessCount % 100 === 0) {
+		var iframes = editors.previewContainer.children('iframe')
+		iframes.remove()
+		var iframe = $('<iframe class="preview" name="preview"></iframe>')
+		editors.previewContainer.append(iframe)
+		editors.previewDocument = window.frames['preview'].document
+		window.frames['preview'].templates = templates
+		accessCount = 0
+	}
+	accessCount++;
+	return editors.previewDocument
+}
 
 editors.showPreview = function() {
-	if(!editors.preview) { return console.log('no preview set') }
+	if(editors.loading || !(editors.template)) { return; }
 	
 	var err
-	var json
+	var json_string, json
 	if(editors.json) {
 		try {
-			var json_string = editors.json.getValue().trim()
-			json = json_string==="" ? null : eval('(' + json_string + ')');
+			json_string = editors.json.getValue().trim()
+			json = (json_string === '') ? null : eval('(' + json_string + ')');
 		} catch (er) {
 			err = er.toString();
 		}
 	}
 	
-	var html = 'No jade editor defined'
-	if(!err && editors.jade) {
+	var jade = editors.jade.getValue()
+	var html
+	if(err) {
+		html = '<pre style="color: red;">' + err + '</pre>'
+	} else if(editors.jade) {
+		var design = '_design_' + editors.template.name
+		json = json || {}
+		json[design] = true
+		
 		try {
-			var fn = editors.jadeEngine.compile(editors.jade.getValue() /*, options*/);
-			html = fn(json);
+			editors.template.render = templates.createRender(editors.template.feature, jade)
+			editors.template.fn = editors.template.render.toString()
+			html = editors.template.render(json)
 		}
 		catch (er) {
-			err = er.toString()
+			html = '<pre style="color: red;">' + er.toString() + '</pre>'
 		}
+
+		delete json[design]
+
+	} else {
+		html = 'No jade editor defined'
 	}
 	
-	if(err) { html = '<pre style="color: red;">' + err + '</pre>' }
+	
 	
 	var css = editors.css.getValue()
-	var javascript = editors.javascript.getValue() 
+	var js = editors.js.getValue()
 	
-	var writeToPreview = function() {
-		editors.preview.open()
-		editors.preview.write(editors.layout({
-				css: css,
-				html: html,
-				javascript: javascript 
-			}))
-		editors.preview.close()		
+	if(editors.template) {
+		//var dmp = new diff_match_patch();
+		//var diff = {}
+		function update(part, value) {
+			var previous = editors.template[part] || ''
+			 ,	current = value || ''
+			if (previous !== current) {
+				//diff[part] =  dmp.diff_main(previous, current)
+				editors.template[part] = value
+				editors.template.changed = true
+			}		
+		}
+		
+		update('css', css)
+		update('html', html)
+		update('jade', jade)
+		update('js', js)
+		update('json', json_string)
+
+		//div.innerHTML = dmp.diff_prettyHtml(d);
+
 	}
-	if(!templates.layout) {
-		templates.load('layout', function() {
-			editors.layout = editors.jadeEngine.compile(templates.layout /*, options*/);
-			writeToPreview()
-		})
-		templates.load('test', function() {})
-	} else {
-		writeToPreview()
-	}
+	
+	var iFrameDoc = editors.createPreviewDocument()
+	iFrameDoc.open()
+	iFrameDoc.write(templates.editor.layout.render({
+			css: css,
+			html: html,
+			javascript: js 
+		}))
+	iFrameDoc.close()		
+	
 }
 
 /*
@@ -125,7 +178,7 @@ editors.createJavascript = function(element) {
 	var JavascriptMode = require("ace/mode/javascript").Mode
 	session.setMode(new JavascriptMode ())
 	
-	editors.javascript = session
+	editors.js = session
 	
 	session.on('change', editors.showPreview)
 	
@@ -140,21 +193,8 @@ editors.createJade = function(element) {
 	session = editor.getSession();
 	session.setTabSize(2);
 	session.setUseSoftTabs(true);
-	
-	var jade = jade_require('jade')	
-	var onchange = function() {
-		var result;
-		try {
-
-			result = jade.render(session.getValue())
-		}
-		catch (er) {
-			result = '<pre style="color: red;">' + er.toString() + '</pre>'
-		}
-		editors.showPreview(result)
-	}
-	
-	session.on('change', onchange)
+		
+	session.on('change', editors.showPreview)
 	editors.jade = session;
 	return editor;
 	

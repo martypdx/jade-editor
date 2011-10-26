@@ -128,7 +128,7 @@ function Panes(panes, options) {
 			$childPane.addClass('fill')
 			$nested.addClass('nested')
 			
-			var nestedPanes = new Panes($nested)
+			var nestedPanes = new Panes($nested, options.subOptions)
 			self.nested = nestedPanes
 			nestedPanes.onresize(fire_onresize)
 			nestedPanes.parent = self;
