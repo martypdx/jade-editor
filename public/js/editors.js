@@ -9,7 +9,8 @@ editors.createSession = function(id) {
   return session;
 }
 
-editors.load = function(template) {
+editors.load = function(templates, template) {
+	editors.templates = templates
 	editors.template = template
 	
 	editors.loading = true
@@ -34,7 +35,7 @@ editors.createPreviewDocument = function() {
 		var iframe = $('<iframe class="preview" name="preview"></iframe>')
 		editors.previewContainer.append(iframe)
 		editors.previewDocument = window.frames['preview'].document
-		window.frames['preview'].templates = templates
+		window.frames['preview'].templates = editors.templates
 		accessCount = 0
 	}
 	accessCount++;
@@ -65,7 +66,7 @@ editors.showPreview = function() {
 		json[design] = true
 		
 		try {
-			editors.template.render = templates.createRender(editors.template.feature, jade)
+			editors.template.render = editors.templates.createRender(editors.template.feature, jade)
 			editors.template.fn = editors.template.render.toString()
 			html = editors.template.render(json)
 		}
@@ -109,7 +110,7 @@ editors.showPreview = function() {
 	
 	var iFrameDoc = editors.createPreviewDocument()
 	iFrameDoc.open()
-	iFrameDoc.write(templates.editor.layout.render({
+	iFrameDoc.write(Templates.getApp('jade-editor').editor.layout.render({
 			css: css,
 			html: html,
 			javascript: js 

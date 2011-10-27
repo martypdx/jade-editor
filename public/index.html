@@ -39,13 +39,15 @@
     <script src="js/editors.js"></script>
     
     <script type="text/javascript">
-		//var suspendResize = false
+		
+		var currentApp = 'sample-app'
 		var intervalId, posting
 		var loadEditor = function(feature, templateName) {
 			if(intervalId) { clearInterval(intervalId) }
 			
+			var templates = Templates.getApp(currentApp)
 			var template = templates[feature][templateName]
-			editors.load(template)
+			editors.load(templates, template)
 			
 			intervalId = setInterval(function() {
 				if(posting || !editors.template.changed){ return }
@@ -60,7 +62,7 @@
 						toPost[part] = editors.template[part]
 					})
 					
-					var post = $.post('/features/' + feature +  '/templates/' + template.name, { template: toPost })
+					var post = $.post('/applications/' + currentApp + '/features/' + feature +  '/templates/' + template.name, { template: toPost })
 					
 					post.error(function() { console.log('error')})
 					post.complete(function() {
@@ -81,6 +83,8 @@
 		var loadTemplate = function(feature, template) {		
 			var loadIt = function() { loadEditor(feature, template) }
 			
+			var templates = Templates.getApp(currentApp)
+			
 			if(!templates[feature]) {
 				templates.loadFeature(feature, loadIt)				
 			} else if (!templates[feature][template]) {
@@ -90,17 +94,20 @@
 			}
 		}
 		var newTemplate = function(feature, template) {		
-			templates.loadTemplate(feature, template, function() { loadEditor(feature, template) })
+			var templates = Templates.getApp(currentApp)
+			templates.loadTemplate(feature, template, function() {
+				loadEditor(feature, template) })
 		}
 		
         var init = function() {
-			templates.loadFeature('editor', function() {})
+			var editorTemplates = Templates.getApp('jade-editor')
+			editorTemplates.loadFeature('editor', function() {})
 			
 			var featureList
 			var loadFeatureList = function() {
-				if(!templates['template-selector'] || !featureList) { return }
+				if(!editorTemplates['template-selector'] || !featureList) { return }
 
-				var template = templates['template-selector']['feature-list']
+				var template = editorTemplates['template-selector']['feature-list']
 				var css = $('<style></style>')
 				css.text(template.css)
 				$('head').append(css)
@@ -109,9 +116,22 @@
 				$('#side-panel').append(html)
 				var fn = new Function(template.js)
 				fn()
+				
+				var toLoad = { feature: 'demo', template: 'hello-world' }
+				var loadFunction = newTemplate
+				if (featureList.features.length > 0) {
+					toLoad.feature = featureList.features[0].name
+					if (featureList.features[0].templates.length > 0) {
+						toLoad.template = featureList.features[0].templates[0]
+						loadFunction = loadTemplate
+					}	
+				}
+				loadFunction(toLoad.feature, toLoad.template)
 			}
-			templates.loadFeature('template-selector', function() { loadFeatureList() })
-			$.getJSON('features', function(response) {
+			
+			editorTemplates.loadFeature('template-selector', function() { loadFeatureList() })
+			
+			$.getJSON('/applications/' + currentApp + '/features', function(response) {
 				featureList = response
 				loadFeatureList()
 			})
@@ -136,7 +156,6 @@
 			})
 			
 			
-			loadTemplate('sample', 'hello-world')
 			
         }
 		

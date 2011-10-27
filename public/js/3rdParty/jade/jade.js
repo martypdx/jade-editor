@@ -2274,10 +2274,10 @@ Parser.prototype = {
     var path = join(dir, path + '.jade')
       , str = fs.readFileSync(path, 'utf8')
     */
-    if(!templates[templates.currentFeature][name]) {
+    if(!Templates.currentFeature[name]) {
         throw new Error('the include "' + name + '"does not exist');
     }
-    var str = templates[templates.currentFeature][name].jade
+    var str = Templates.currentFeature[name].jade
     var parser = new Parser(str /*, path*/ )
       , ast = parser.parse();
 

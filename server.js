@@ -15,28 +15,39 @@ app.get('/', function (request, response) {
 })
 
 var templateService = require('./lib/template-service')
-var templates = templateService.getApp(__dirname)
+services = {}
+var getTemplateService = function(app) {
+    if(!services[app]) {
+        var parentDir = path.dirname(__dirname)
+        var appDir = path.join(parentDir, app)
+        services[app] = templateService.getApp(appDir)
+    }
+    return services[app]
+}
 
-app.get('/features', function (request, response) {
+app.get('/applications/:application/features', function (request, response) {
+    var templates = getTemplateService(request.params.application)
     templates.listAll(function(err, data) {
         response.send(data)    
     })    
 })
 
-app.get('/features/:feature/templates/:template', function (request, response) {
+app.get('/applications/:application/features/:feature/templates/:template', function (request, response) {
+    var templates = getTemplateService(request.params.application)
     templates.getTemplate(request.params.feature, request.params.template, function(err, template) {
         response.send(err || template)    
     }) 
 })
 
-app.get('/features/:feature/templates', function (request, response) {
-    var feature = request.params.feature
-    templates.getTemplates(feature, function(err, templates) {
+app.get('/applications/:application/features/:feature/templates', function (request, response) {
+    var templates = getTemplateService(request.params.application)
+    templates.getTemplates(request.params.feature, function(err, templates) {
         response.send(err || templates )    
     }) 
 })
 
-app.post('/features/:feature/templates/:templateName', function (request, response) {
+app.post('/applications/:application/features/:feature/templates/:templateName', function (request, response) {
+    var templates = getTemplateService(request.params.application)
     templates.saveTemplate(request.params.feature, request.params.templateName,
                  request.param('template'), function(err) {
                     if(err) { console.log('template save error', err) }
@@ -66,4 +77,3 @@ io.sockets.on('connection', function(client) {
 var port = 80
 app.listen(port)
 console.log('Jade-editor started on port ' + port)
-console.log('current app is', templates.app)
