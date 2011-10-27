@@ -18,8 +18,14 @@ var templateService = require('./lib/template-service')
 services = {}
 var getTemplateService = function(app) {
     if(!services[app]) {
+        /*
         var parentDir = path.dirname(__dirname)
         var appDir = path.join(parentDir, app)
+        */
+        
+        //for smart-machine
+        var appDir = app === 'jade-editor' ? __dirname : path.join(__dirname, app)
+        
         services[app] = templateService.getApp(appDir)
     }
     return services[app]
