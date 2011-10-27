@@ -1,3 +1,5 @@
+var templates = Templates.getApp('jade-editor')['template-selector']
+
 $('a.template').live('click', function(e) {
     var target = $(e.target)
     loadTemplate(target.attr('feature'), target.attr('template'))
@@ -7,7 +9,7 @@ $('input.new.template').live('keyup', function(e){
         var feature = $(e.target).attr('feature')
         var template = this.value
         
-        var replace = templates['template-selector'].templates.render({
+        var replace = templates.templates.render({
             feature: feature,
             templates: [template]
         })
@@ -18,7 +20,7 @@ $('input.new.template').live('keyup', function(e){
 })
 $('input.new.feature').live('keyup', function(e){
     if(e.which === 13) {
-        var replace = templates['template-selector'].features.render({
+        var replace = templates.features.render({
             features: [ { name: this.value, templates: [] }]
         })
         $(this).parent().replaceWith(replace) 
