@@ -63,7 +63,7 @@ io.sockets.on('connection', function(client) {
 });
 */
 
-var port = 80;
+var port = 11484 //80
 app.listen(port)
 console.log('Jade-editor started on port ' + port)
 console.log('current app is', templates.app)
