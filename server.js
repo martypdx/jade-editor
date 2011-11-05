@@ -9,22 +9,26 @@ var app = express.createServer(
 
 app.set('view engine', 'jade')
 
+var appToEdit = process.argv.length > 2 ? process.argv[2] : 'jade-editor'
+console.log('Editing app', appToEdit)
 
 app.get('/', function (request, response) {
-    //response.render('meepbop', { layout: false });
+    response.render('index', { layout: false, app: appToEdit });
 })
 
-var templateService = require('./lib/template-service')
+var templateService = require('./lib/common/template-service')
 services = {}
 var getTemplateService = function(app) {
     if(!services[app]) {
-        /*
+        
         var parentDir = path.dirname(__dirname)
         var appDir = path.join(parentDir, app)
-        */
         
+        
+        /*
         //for smart-machine
         var appDir = app === 'jade-editor' ? __dirname : path.join(__dirname, app)
+        */
         
         services[app] = templateService.getApp(appDir)
     }
@@ -34,6 +38,13 @@ var getTemplateService = function(app) {
 app.get('/applications/:application/features', function (request, response) {
     var templates = getTemplateService(request.params.application)
     templates.listAll(function(err, data) {
+        response.send(data)    
+    })    
+})
+
+app.get('/applications/:application/features/all', function (request, response) {
+    var templates = getTemplateService(request.params.application)
+    templates.getAll(function(err, data) {
         response.send(data)    
     })    
 })
@@ -80,6 +91,6 @@ io.sockets.on('connection', function(client) {
 });
 */
 
-var port = 80
+var port = 88
 app.listen(port)
 console.log('Jade-editor started on port ' + port)

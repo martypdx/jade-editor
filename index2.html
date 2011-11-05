@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style type="text/css">
+        body {
+            margin: 0px;
+            background: lightblue;
+        }
+        .editor {
+            position: absolute;
+            width: 80%; height: 70%;
+            margin: 15px;
+            border: 1px dashed steelblue;
+        }
+        .jade, .html, .json {
+            position: absolute;
+            resize: none;
+        }
+        .jade, .html {
+            width: 35%; height: 95%;
+            border: 1px groove lightblue;
+            padding: 10px;
+        }
+        .html {
+            right: 0%;
+            background: ivory;
+        }
+        .json {
+            top: 30%; left: 37%;
+            width: 22%; height: 20%;
+            background: white;
+            border: 20px solid lightgreen;
+        }
+    </style>
+
+    <script type="text/javascript">
+        function $(s) { return document.querySelector(s); }
+        
+        window.onload = function() {
+            //initJade();
+            //test();
+        }
+        
+        function test() {
+            
+            var expected = $('#expected').textContent;
+            var actual = $('.editor>.html').textContent;
+            
+            if(expected !== actual) { alert('Actual does not match expected standard') }
+        }
+    </script>
+    <script src="js/3rdParty/jade.js"></script>
+    
+    <script type="text/javascript">     
+        function initJade() {
+            var template = $('.editor>.jade').value
+            $('.editor>.html').textContent = require('jade').render(template);
+        }
+    </script>
+
+</head>
+<body>
+    <div id="expected" style="display: none;">&lt;p&gt;Hello World&lt;/p&gt;</div>
+    <div class="editor">
+        <textarea class="jade">p Hello #{place}</textarea>
+        <textarea class="html">&lt;p&gt;Hello World&lt;/p&gt;</textarea>
+        <pre class="json">{
+    place: 'World'
+}</pre>
+    </div>
+</body>
+</html>

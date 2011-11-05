@@ -1,6 +1,8 @@
 mixin template-link(feature, template)
   li
-    a.template(href="#editor",
+    - var id = feature + "-" + template
+    a.template(href='#' + id,
+    id=id,
     feature=feature,
     template=template) #{template}
 

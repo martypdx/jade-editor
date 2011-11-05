@@ -1,0 +1,7 @@
+/public/*
+README
+/.git/*
+/.idea/*
+/tests/*
+/features/*
+/package.json

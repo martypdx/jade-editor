@@ -1,1 +1,38 @@
-p Hello World
+mixin feedback-picture(name, id)
+  img.comment(title=name, src='http://graph.facebook.com/#{id}/picture') 
+
+mixin addl-feedback(count, length)
+  - var addl = count - length
+    if addl > 0
+      .comment.faux
+        span +#{addl}
+
+.posts
+  each post in posts
+    .post 
+      .post-content
+        if post.picture
+          div
+            img.feed-picture(src=post.picture)
+        
+        if post.from.id !== '1439829533'
+          span.post-from #{post.from.name}:&nbsp;&nbsp;
+
+        #{post.message}
+        if post.link
+          div
+            a(href="#{post.link}", target="blank") #{post.name}
+          div
+            #{post.description}
+      .post-footer 
+        img.source(src=source)
+        abbr(title=post.created_time) #{post.created_time}
+        span.comments
+          if post.likes
+            each person in post.likes.data
+              mixin feedback-picture(person.name, person.id)  
+            mixin addl-feedback(post.likes.count, post.likes.data.length)
+          if post.comments
+            each comment in post.comments.data
+              mixin feedback-picture(comment.from.name, comment.from.id)  
+            mixin addl-feedback(post.comments.count, post.comments.data.length)

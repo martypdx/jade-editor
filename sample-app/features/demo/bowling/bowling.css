@@ -1,0 +1,49 @@
+.game {
+  position: relative;
+  height: 100px; width: 100%;
+  font-size: 20pt;
+}
+.frame {
+	position: relative;
+	height: 100%; width: 9.5%;
+	border-left: 1px solid;
+  border-top: 1px solid;
+  border-bottom: 1px solid;
+	display: inline-block;
+}
+.frame:last-child {
+	border-right: 1px solid;
+}
+.throws {
+  text-align: right;
+  overflow: hidden;
+}
+.throw {
+  font-size: 1em;	
+	padding-top: 2%;
+	text-align: center;
+  display: inline-block;
+  height: 31%; width: 32%;
+}
+.throw:not(:first-child), .throw:only-child {
+  border-left: 1px solid;
+	border-bottom: 1px solid;
+}
+.throw:nth-last-child(2):first-child {
+  width: 65%;
+}
+.strike:before {
+  content: 'X';
+}
+.spare:before {
+  content: '/';
+  
+  
+}
+.score {
+	position: absolute;
+	text-align: center;
+	width: 100%;
+	bottom: 7%;
+	font-size: 1.5em
+}

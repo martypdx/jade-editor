@@ -32,6 +32,9 @@ ul.templates > li> a {
   font-size: 11pt;
   color: rgba(0, 128, 0, .6);
 }
+ul.templates > li> a:target {
+  color: red !important;
+}
 input.new {
   width: 90%;  
 }

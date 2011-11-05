@@ -51,10 +51,13 @@ editors.showPreview = function() {
 		try {
 			json_string = editors.json.getValue().trim()
 			json = (json_string === '') ? null : eval('(' + json_string + ')');
+			if(typeof json === 'function') { json = json()}
 		} catch (er) {
 			err = er.toString();
 		}
 	}
+	
+	var js = editors.js.getValue()
 	
 	var jade = editors.jade.getValue()
 	var html
@@ -66,9 +69,15 @@ editors.showPreview = function() {
 		json[design] = true
 		
 		try {
-			editors.template.render = editors.templates.createRender(editors.template.feature, jade)
+			var jadeFn = editors.template.render = editors.templates.createRender(editors.template.feature, jade)
 			editors.template.fn = editors.template.render.toString()
 			html = editors.template.render(json)
+			var fn = new Function('template', js)
+			editors.template.create = function(data) {
+				var result = $(jadeFn(data))
+				fn(result)
+				return result
+			}   
 		}
 		catch (er) {
 			html = '<pre style="color: red;">' + er.toString() + '</pre>'
@@ -83,7 +92,6 @@ editors.showPreview = function() {
 	
 	
 	var css = editors.css.getValue()
-	var js = editors.js.getValue()
 	
 	if(editors.template) {
 		//var dmp = new diff_match_patch();
@@ -108,10 +116,42 @@ editors.showPreview = function() {
 
 	}
 	
+	var styles = []
+	var addedFeatures = {}
+	var addStyles = function(featureName) {
+		var featureToAdd = editors.templates[featureName]
+		for(templateToAdd in featureToAdd) {
+			var templateCss = featureToAdd[templateToAdd].css
+			if(templateCss && templateCss.trim() !== '') {
+				styles.push(templateCss)
+			}
+		}
+		addedFeatures[featureName] = true
+		if(!featureToAdd) {
+			throw new Error('unexpected lack of featureToAdd for ' + featureName)
+		}
+		
+		if(featureToAdd.currentDependencies) {
+			for(dependecy in featureToAdd.currentDependencies) {
+				if(!addedFeatures[dependecy]) {
+					addStyles(dependecy)
+				}
+			}
+		}
+		
+	}
+	addStyles(editors.template.feature) 
+	
 	var iFrameDoc = editors.createPreviewDocument()
 	iFrameDoc.open()
-	iFrameDoc.write(Templates.getApp('jade-editor').editor.layout.render({
-			css: css,
+	
+	var featureLayout = editors.templates[editors.template.feature].layout
+	var appLayout = editors.templates.layout ? editors.templates.layout.layout : null
+	var defaultLayout = Templates.getApp('jade-editor').editor.layout
+	var layout = featureLayout || appLayout || defaultLayout
+				
+	iFrameDoc.write(layout.render({
+			css: styles,
 			html: html,
 			javascript: js 
 		}))
@@ -135,7 +175,7 @@ editors.createCSS = function(element) {
 	editor.renderer.setShowGutter(false)
 	
 	var session = editor.getSession()
-	session.setTabSize(2)
+	session.setTabSize(4)
 	//session.setUseSoftTabs(true)
 	
 	var CssScriptMode = require("ace/mode/css").Mode

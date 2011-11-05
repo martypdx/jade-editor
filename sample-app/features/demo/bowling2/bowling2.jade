@@ -1,0 +1,35 @@
+- var score = 0, frame = 0
+mixin frame(throws, n)
+  .frame
+    .throws
+      - frame++
+      - var frameScore = throws[n] //+throws[n+1]
+      if frameScore === 10
+        .throw.strike
+        - score += frameScore
+        - score += throws[n+1]
+        - score += throws[n+2]
+      else
+        .throw #{throws[n]}
+        - frameScore += throws[n+1]
+        - score += frameScore
+        if frameScore === 10
+          .throw.spare
+          - score += throws[n+2]
+          if(frame === 10) 
+            .throw #{throws[n+2]}
+        else
+          .throw #{throws[n+1]}
+    .score #{score}  
+
+.game
+  mixin frame(throws, 0)
+  mixin frame(throws, 2)
+  mixin frame(throws, 4)
+  mixin frame(throws, 6)
+  mixin frame(throws, 8)
+  mixin frame(throws, 9)
+  mixin frame(throws, 11)
+  mixin frame(throws, 13)
+  mixin frame(throws, 15)
+  mixin frame(throws, 16)

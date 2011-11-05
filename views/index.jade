@@ -1,0 +1,55 @@
+!!! 
+html 
+  head
+    meta(http-equiv="Content-Type",content="text/html",charset="utf-8")
+    title Delight
+    
+    for link in ['main', 'panes', 'editors']
+        link(rel="stylesheet", type="text/css", href="css/#{link}.css")
+
+
+    script(src="js/common/3rdParty/jquery/jquery.js")
+    script(src="js/3rdParty/event.drag.touch/jquery.event.drag.js")
+    
+    // ace
+    script(src="js/3rdParty/ace/ace.js")
+    script(src="js/3rdParty/ace/mode-javascript.js")
+    script(src="js/3rdParty/ace/mode-css.js")
+    script(src="js/3rdParty/ace/mode-json.js")
+    script(src="js/3rdParty/ace/theme-solarized_light.js")
+    
+    
+    script(src="js/common/3rdParty/microevent/microevent.js")
+    script(src="js/common/3rdParty/jade/jade.js")
+    script(src="js/3rdParty/beautify/beautify.min.js")
+    script(src="js/3rdParty/dpm/diff_match_patch_uncompressed.js")
+    script(src="js/common/templates.js")
+    script(src="js/panes.js")
+    script(src="js/editors.js")
+    
+    script
+        var currentApp = '#{app}'
+     
+    script(src="js/jade-editor-load.js")   
+  body
+    #master.panes
+        #side-panel.pane.top.bottom.left.shadow
+        #main-panel.pane.top.bottom.right.shadow
+            .panes
+                .pane.top.bottom.left.shadow
+                    .panes
+                        .pane.top.left.shadow
+                            .jade
+                        .pane.top.right.shadow
+                            .css
+                        .pane.bottom.left.shadow
+                            .json
+                        .pane.bottom.right.shadow
+                            .javascript
+                        .sizer.quad-sizer
+            
+                #preview-pane.pane.top.bottom.right.shadow
+                    #preview-container.pane.top.bottom.right.shadow
+                    input#lock-html(type="checkbox", name="lock", value="locked")
+                .sizer.horizontal-sizer
+        .sizer.horizontal-sizer
