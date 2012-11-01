@@ -1,1 +1,4 @@
 .nodester.appconfig
+node_modules/*
+*.bat
+*.sublime-*

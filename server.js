@@ -1,12 +1,10 @@
 var express = require('express')
  ,  fs = require('fs')
  ,  path = require('path')
- 
-var app = express.createServer(
-    express.static(path.join(__dirname, 'public'))
- ,  express.bodyParser()
-)
+ ,  app = express()
 
+app.use(express.static(path.join(__dirname, 'public')))
+app.use(express.bodyParser())
 app.set('view engine', 'jade')
 
 var appToEdit = process.argv.length > 2 ? process.argv[2] : 'jade-editor'
@@ -14,9 +12,6 @@ console.log('Editing app', appToEdit)
 
 app.get('/', function (request, response) {
     response.render('index', { layout: false, app: appToEdit });
-})
-app.get('/test', function (request, response) {
-    response.render('test-jade', { layout: false });
 })
 
 var templateService = require('./lib/common/template-service')

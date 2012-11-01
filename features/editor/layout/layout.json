@@ -1,5 +1,7 @@
 {
-  "css": "",
+  "styles": [],
   "html": "",
-  "javascript": ""
+  "javascript": "",
+  "feature": "the-feature",
+  "templateName": "the-template-name"
 }
