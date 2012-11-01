@@ -1,8 +1,0 @@
-mixin template-link(feature, template)
-  li
-    a.template(href="#editor",
-    feature=feature,
-    template=template) #{template}
-
-if(locals['_design_template-mixin'])
-  mixin template-link(feature, template)
