@@ -15,8 +15,11 @@ console.log('Editing app', appToEdit)
 app.get('/', function (request, response) {
     response.render('index', { layout: false, app: appToEdit });
 })
+app.get('/test', function (request, response) {
+    response.render('test-jade', { layout: false });
+})
 
-var templateService = require('./lib/common/template-service')
+var templateService = require('../common/lib/template-service')
 services = {}
 var getTemplateService = function(app) {
     if(!services[app]) {

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <!--
+    <script src="js/common/3rdParty/jquery/jquery.js"></script>
+    <script src="js/common/3rdParty/jsPlumb/jquery.jsPlumb.js"></script>
+    -->
+    
+    <script type='text/javascript' src='http://code.jquery.com/jquery-1.7.js'></script>
+    <script type='text/javascript' src="http://jsplumb.org/js/1.3.3/jquery.jsPlumb-1.3.3-all-min.js"></script>
+      
+    <style>
+    body { margin: 0 }
+    .box { 
+        position: absolute;
+        height: 100px; width: 100px;
+        background: lightsteelblue;
+    }
+    
+    #b2 {
+        top: 200px; left:200px;    
+    }
+    </style>
+    <script type="text/javascript">
+        $(function() {
+            jsPlumb.setRenderMode(jsPlumb.SVG)
+            jsPlumb.connect({ source: 'b1', target: 'b2'})
+        });
+    </script>
+</head>
+<body>
+    <div id="b1" class="box">
+        <div id="b2" class="box"></div>
+    </div>
+
+
+</body>
+</html>

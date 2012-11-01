@@ -1,6 +1,7 @@
 
 var editors = {}
 var theme = 'solarized_light' //'dawn'
+
 editors.createSession = function(id) {
   var editor = ace.edit(id);
   var session = editor.getSession();
@@ -45,85 +46,40 @@ editors.createPreviewDocument = function() {
 editors.showPreview = function() {
 	if(editors.loading || !(editors.template)) { return; }
 	
-	var err
-	var json_string, json
-	if(editors.json) {
-		try {
-			json_string = editors.json.getValue().trim()
-			json = (json_string === '') ? null : eval('(' + json_string + ')');
-			if(typeof json === 'function') { json = json()}
-		} catch (er) {
-			err = er.toString();
-		}
-	}
-	
-	var js = editors.js.getValue()
-	
-	var jade = editors.jade.getValue()
-	var html
-	if(err) {
-		html = '<pre style="color: red;">' + err + '</pre>'
-	} else if(editors.jade) {
-		var design = '_design_' + editors.template.name
-		json = json || {}
-		json[design] = true
+	var template = editors.template
 		
-		try {
-			var jadeFn = editors.template.render = editors.templates.createRender(editors.template.feature, jade)
-			editors.template.fn = editors.template.render.toString()
-			html = editors.template.render(json)
-			var fn = new Function('template', js)
-			editors.template.create = function(data) {
-				var result = $(jadeFn(data))
-				fn(result)
-				return result
-			}   
-		}
-		catch (er) {
-			html = '<pre style="color: red;">' + er.toString() + '</pre>'
-		}
+	try {
 
-		delete json[design]
-
-	} else {
-		html = 'No jade editor defined'
-	}
-	
-	
-	
-	var css = editors.css.getValue()
-	
-	if(editors.template) {
-		//var dmp = new diff_match_patch();
-		//var diff = {}
-		function update(part, value) {
-			var previous = editors.template[part] || ''
-			 ,	current = value || ''
-			if (previous !== current) {
-				//diff[part] =  dmp.diff_main(previous, current)
-				editors.template[part] = value
-				editors.template.changed = true
-			}		
-		}
+		var json_string = template.json
+		 ,	json = (json_string !== '') 
+		 		? eval('(' + json_string + ')')
+		 		: undefined
 		
-		update('css', css)
-		update('html', html)
-		update('jade', jade)
-		update('js', js)
-		update('json', json_string)
+		if(typeof json === 'function') {
+			json = json()
+		} else {
+			template.json = JSON.stringify(json, null, 2)
+		}
 
-		//div.innerHTML = dmp.diff_prettyHtml(d);
-
+		editors.templates.makeTemplate(editors.template)
+		template.html = template.render(json)   
+		
+	} catch (e) {
+		template.html = '<pre style="color: red;">' + e.toString() + '</pre>'
 	}
-	
+
 	var styles = []
 	var addedFeatures = {}
 	var addStyles = function(featureName) {
 		var featureToAdd = editors.templates[featureName]
 		for(templateToAdd in featureToAdd) {
-			var templateCss = featureToAdd[templateToAdd].css
-			if(templateCss && templateCss.trim() !== '') {
-				styles.push(templateCss)
+			var template = featureToAdd[templateToAdd]
+			if(template.css && template.css.trim() !== '') {
+				styles.push({
+					feature: featureName
+				 , 	template: template.name
+				 , 	css: template.css
+				})
 			}
 		}
 		addedFeatures[featureName] = true
@@ -151,10 +107,13 @@ editors.showPreview = function() {
 	var layout = featureLayout || appLayout || defaultLayout
 				
 	iFrameDoc.write(layout.render({
-			css: styles,
-			html: html,
-			javascript: js 
-		}))
+		styles: styles
+	 ,	html: template.html
+	 ,	javascript: template.js
+	 ,	feature: template.feature
+	 ,	templateName: template.name
+	}))
+
 	iFrameDoc.close()		
 	
 }
@@ -183,7 +142,16 @@ editors.createCSS = function(element) {
 	
 	editors.css = session
 	
-	session.on('change', editors.showPreview)
+	session.on('change', function() {
+		if(editors.loading) return;
+
+		editors.template.css = session.getValue()
+		editors.template.changed = true
+						
+		var style = $(editors.previewDocument).find('head>style[feature=' + editors.template.feature + '][template=' + editors.template.name + ']')
+		//need to insert if it doesn't exist
+		style.html(editors.template.css)
+	})
 	
 	return editor
 }
@@ -203,7 +171,13 @@ editors.createJSON = function(element) {
 	
 	editors.json = session
 	
-	session.on('change', editors.showPreview)
+	session.on('change', function(){
+		if(editors.loading) return;
+
+		editors.template.json = session.getValue().trim()
+		editors.template.changed = true	
+		editors.showPreview()
+	})
 	
 	return editor
 }
@@ -221,7 +195,18 @@ editors.createJavascript = function(element) {
 	
 	editors.js = session
 	
-	session.on('change', editors.showPreview)
+	session.on('change', function() {
+		if(editors.loading) return;
+
+		editors.template.js = session.getValue()
+		editors.template.changed = true		
+	})
+	
+	$(element).keydown(function(e){
+		if(e.ctrlKey && e.which === 13) {
+		    editors.showPreview()
+		}
+	})
 	
 	return editor
 }
@@ -235,8 +220,15 @@ editors.createJade = function(element) {
 	session.setTabSize(2);
 	session.setUseSoftTabs(true);
 		
-	session.on('change', editors.showPreview)
 	editors.jade = session;
+	session.on('change', function(){
+		if(editors.loading) return;
+
+		editors.template.jade = session.getValue()
+		editors.template.changed = true	
+		editors.showPreview()
+	})
+
 	return editor;
 	
 	

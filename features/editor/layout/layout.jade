@@ -1,16 +1,24 @@
 !!! 
 html 
-  head 
-    if css instanceof Array
-      for style in css
-        style
-          !{style}
+  head
+    mixin stylesheet(feature, template, css)
+      style(feature=feature, template=template)
+       !{css}
+       
+    if locals.styles
+      for style in styles
+        mixin stylesheet(style.feature, style.template, style.css)
     else
-      style
-        !{css}
+      if locals.style
+        mixin stylesheet(style.feature, style.template, style.css)
+        
     script(src="js/common/3rdParty/jquery/jquery.js") 
   body
     !{html}
-    script(type="text/javascript")
-      var template = $('body').children()
-      !{javascript}
+    script(type="text/javascript") 
+      if('#{templateName}' !== 'layout') {
+        (function(){
+          var template = $('body').children().eq(0)
+          templates['#{feature}']['#{templateName}'].activate(template)
+        })()
+      }

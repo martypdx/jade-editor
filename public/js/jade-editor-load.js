@@ -9,8 +9,9 @@ var loadEditor = function(feature, templateName) {
     intervalId = setInterval(function() {
         if(posting || !editors.template.changed){ return }
         
+        console.log('save for', editors.template.name)
+
         posting = true
-        donePosting = function() { posting = false}
         
         try {
             var templateParts = ['css', 'fn', 'html', 'jade', 'js', 'json']
@@ -21,7 +22,9 @@ var loadEditor = function(feature, templateName) {
             
             var post = $.post('/applications/' + currentApp + '/features/' + feature +  '/templates/' + template.name, { template: toPost })
             
-            post.error(function() { console.log('error')})
+            post.error(function() { console.log('error saving', 
+                editors.template.name)})
+                
             post.complete(function() {
                 posting = false		
             })
@@ -81,14 +84,29 @@ var init = function() {
         
         var templates = Templates.getApp(currentApp)
         templates.loadAll(function() {
-            var toLoad = {  }
-            if (featureList.features.length > 0) {
-                toLoad.feature = featureList.features[0].name
-                if (featureList.features[0].templates.length > 0) {
-                    toLoad.template = featureList.features[0].templates[0]
-                    loadTemplate(toLoad.feature, toLoad.template)
+            var loadFromAnchor = function() {
+                var url = document.URL.split('#')
+                if(url.length > 1) {
+                    var anchor = url[1].split('/')
+                    if(anchor.length > 1) {
+                        loadTemplate(anchor[0],anchor[1])
+                        return true
+                    }
                 }
+                return false
             }
+
+            var loadFirst = function() {
+                if (featureList.features.length > 0) {
+                    var feature = featureList.features[0].name
+                    if (featureList.features[0].templates.length > 0) {
+                        var template = featureList.features[0].templates[0]
+                        loadTemplate(feature, template)
+                    }
+                }     
+            }
+
+            loadFromAnchor() || loadFirst()
         })   
     })
     
