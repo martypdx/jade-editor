@@ -19,7 +19,7 @@ app.get('/test', function (request, response) {
     response.render('test-jade', { layout: false });
 })
 
-var templateService = require('../common/lib/template-service')
+var templateService = require('./lib/common/template-service')
 services = {}
 var getTemplateService = function(app) {
     if(!services[app]) {
