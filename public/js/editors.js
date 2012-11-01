@@ -72,9 +72,18 @@ editors.showPreview = function() {
 	var addedFeatures = {}
 	var addStyles = function(featureName) {
 		var featureToAdd = editors.templates[featureName]
+		if(!featureToAdd) {
+			throw new Error('unexpected lack of featureToAdd for ' + featureName)
+		}
+
+		addedFeatures[featureName] = true
 		for(templateToAdd in featureToAdd) {
 			var template = featureToAdd[templateToAdd]
-			if(template.css && template.css.trim() !== '') {
+
+			//make sure we include the template being rendered
+			var target = (template.name === editors.template.name && template.feature === editors.template.feature)
+
+			if(target || (template.css && template.css.trim() !== '') ) {
 				styles.push({
 					feature: featureName
 				 , 	template: template.name
@@ -82,11 +91,7 @@ editors.showPreview = function() {
 				})
 			}
 		}
-		addedFeatures[featureName] = true
-		if(!featureToAdd) {
-			throw new Error('unexpected lack of featureToAdd for ' + featureName)
-		}
-		
+				
 		if(featureToAdd.currentDependencies) {
 			for(dependecy in featureToAdd.currentDependencies) {
 				if(!addedFeatures[dependecy]) {
@@ -149,7 +154,6 @@ editors.createCSS = function(element) {
 		editors.template.changed = true
 						
 		var style = $(editors.previewDocument).find('head>style[feature=' + editors.template.feature + '][template=' + editors.template.name + ']')
-		//need to insert if it doesn't exist
 		style.html(editors.template.css)
 	})
 	
