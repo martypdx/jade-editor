@@ -1,0 +1,13 @@
+.stylely {
+    background: steelblue;
+    color: white;
+    padding: 10px;
+}
+.edit {
+    float: left;
+    background: wheat;
+    padding: 10px;
+    margin: 5px;
+    width: 35%;
+    cursor: pointer;
+}

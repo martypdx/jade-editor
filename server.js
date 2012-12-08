@@ -7,27 +7,27 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(express.bodyParser())
 app.set('view engine', 'jade')
 
-var appToEdit = process.argv.length > 2 ? process.argv[2] : 'jade-editor'
-console.log('Editing app', appToEdit)
-
 app.get('/', function (request, response) {
-    response.render('index', { layout: false, app: appToEdit });
+    //todo: make app chooser
+    response.redirect('/demo')
+})
+
+app.get('/:app', function (request, response) {
+    response.render('index', { layout: false, app: request.params.app });
 })
 
 var templateService = require('./lib/common/template-service')
 services = {}
+var siblings = process.argv.length > 2 && process.argv[2][0] === 'r'
+
+var rootDir = siblings ? path.dirname(__dirname) : path.join(__dirname, 'apps')
+console.log('App root is', rootDir)
+
+
 var getTemplateService = function(app) {
     if(!services[app]) {
-        
-        var parentDir = path.dirname(__dirname)
-        var appDir = path.join(parentDir, app)
-        
-        
-        /*
-        //for smart-machine
-        var appDir = app === 'jade-editor' ? __dirname : path.join(__dirname, app)
-        */
-        
+        var root = (app === 'jade-editor') ? path.dirname(__dirname) : rootDir
+        var appDir = path.join(root, app)
         services[app] = templateService.getApp(appDir)
     }
     return services[app]
